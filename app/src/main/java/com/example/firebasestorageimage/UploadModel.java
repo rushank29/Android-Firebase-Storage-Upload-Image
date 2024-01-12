@@ -1,6 +1,9 @@
 package com.example.firebasestorageimage;
 
+import com.google.firebase.database.Exclude;
+
 public class UploadModel {
+    private String mKey;
     private String mName;
     private String mImageUrl;
 
@@ -9,12 +12,22 @@ public class UploadModel {
     }
 
     public UploadModel(String name, String imageUrl) {
-        if (name.trim().equals("")) {
-            name = "No name";
-        }
+//        if (name.trim().equals("")) {
+//            name = "No name";
+//        }
 
-        mName = name;
-        mImageUrl = imageUrl;
+        this.mName = name;
+        this.mImageUrl = imageUrl;
+    }
+
+    @Exclude
+    public String getKey() {
+        return mKey;
+    }
+
+    @Exclude
+    public void setKey(String mKey) {
+        this.mKey = mKey;
     }
 
     public String getName() {

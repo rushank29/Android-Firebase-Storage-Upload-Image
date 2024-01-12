@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
         chooseImageBtn = (Button) findViewById(R.id.choose_image_btn);
         uploadBtn = (Button) findViewById(R.id.upload_btn);
-        fileName = (TextInputEditText) findViewById(R.id.file_name);
+        fileName = (TextInputEditText) findViewById(R.id.et_file_name);
         showUploads = (TextView) findViewById(R.id.show_uploads);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         uploadedImage = (ImageView) findViewById(R.id.uploaded_image);
@@ -69,10 +71,9 @@ public class MainActivity extends AppCompatActivity {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (fileName.getText().toString().trim() == null) {
+                if (TextUtils.isEmpty(fileName.getText().toString())) {
                     fileName.setError("Enter file name");
-                }
-                if (mUploadTask != null && mUploadTask.isInProgress()) {
+                } else if (mUploadTask != null && mUploadTask.isInProgress()) {
                     Toast.makeText(MainActivity.this, "Upload in progress", Toast.LENGTH_SHORT).show();
                 } else {
                     uploadFile();
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         showUploads.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                openImagesActivity();
             }
         });
     }
@@ -131,12 +132,27 @@ public class MainActivity extends AppCompatActivity {
                                 public void run() {
                                     progressBar.setProgress(0);
                                 }
-                            }, 2000);
-                            Toast.makeText(MainActivity.this, "Upload Successful", Toast.LENGTH_SHORT).show();
+                            }, 1000);
+                            Toast.makeText(MainActivity.this, "Uploaded Successfully!", Toast.LENGTH_SHORT).show();
+                        /*
                             UploadModel upload = new UploadModel(fileName.getText().toString().trim(),
                                     taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
                             String uploadId = mDatabaseRef.push().getKey();
                             mDatabaseRef.child(uploadId).setValue(upload);
+                        */
+
+                            Task<Uri> urlTask = taskSnapshot.getStorage().getDownloadUrl();
+                            while (!urlTask.isSuccessful()) ;
+                            {
+                                Uri downloadUrl = urlTask.getResult();
+
+                                UploadModel upload = new UploadModel(fileName.getText().toString().trim(), downloadUrl.toString());
+
+                                String uploadId = mDatabaseRef.push().getKey();
+                                mDatabaseRef.child(uploadId).setValue(upload);
+                            }
+                            Glide.with(MainActivity.this).clear(uploadedImage);
+                            fileName.setText("");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -157,5 +173,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No file selected, please select a file to upload.", Toast.LENGTH_SHORT).show();
 //            chooseImageBtn.setError("No file selected.");
         }
+    }
+
+    private void openImagesActivity() {
+        Intent intent = new Intent(this, ImagesActivity.class);
+        startActivity(intent);
     }
 }

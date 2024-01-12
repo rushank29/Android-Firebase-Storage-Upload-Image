@@ -46,7 +46,7 @@
                 android:layout_marginLeft="@dimen/_8sdp">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/file_name"
+                    android:id="@+id/et_file_name"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="File name"
